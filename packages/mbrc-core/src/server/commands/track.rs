@@ -146,14 +146,21 @@ pub fn lfm_rating(data: &Value, ctx: &Ctx) -> HandlerResult {
 ///
 /// # Errors
 /// The provider call failed.
-pub fn tag_change(data: &Value, p: &dyn Providers) -> HandlerResult {
+pub fn tag_change(data: &Value, ctx: &Ctx) -> HandlerResult {
     let tag = data.get("tag").and_then(Value::as_str).unwrap_or("");
     let value = data.get("value").and_then(Value::as_str).unwrap_or("");
     if tag.is_empty() {
         return Err("tagchange missing 'tag'".to_string());
     }
-    p.set_tag(tag, value)?;
-    frame_dto("nowplayingdetails", &p.track_details()?)
+    ctx.providers.set_tag(tag, value)?;
+    if let Some(c) = ctx.now_playing {
+        c.refresh_track_details();
+    }
+    let details = ctx.now_track_details()?;
+    Ok(vec![(
+        "nowplayingdetails".to_string(),
+        ctx.wire().track_details(&details),
+    )])
 }
 
 #[cfg(test)]
@@ -265,8 +272,9 @@ mod tests {
     #[test]
     fn tag_change_requires_tag_and_replies_details() {
         let m = MockProviders::default();
-        assert!(tag_change(&json!({"value": "x"}), &m).is_err());
-        let out = tag_change(&json!({"tag": "artist", "value": "New"}), &m).unwrap();
+        let ctx = Ctx::new(&m, ProtocolVersion::V4);
+        assert!(tag_change(&json!({"value": "x"}), &ctx).is_err());
+        let out = tag_change(&json!({"tag": "artist", "value": "New"}), &ctx).unwrap();
         assert_eq!(out[0].0, "nowplayingdetails");
         assert!(m.recorded().contains(&"set_tag(artist,New)".to_string()));
     }

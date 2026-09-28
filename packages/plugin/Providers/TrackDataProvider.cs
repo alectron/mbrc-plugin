@@ -478,7 +478,16 @@ namespace MusicBeePlugin.Providers
 
         public bool CommitTrackTags(string fileUrl)
         {
-            return _api.Library_CommitTagsToFile(fileUrl);
+            var success = _api.Library_CommitTagsToFile(fileUrl);
+            try
+            {
+                _api.MB_RefreshPanels();
+            }
+            catch
+            {
+                // Non-critical: failure to refresh panels shouldn't fail commit
+            }
+            return success;
         }
 
         #endregion

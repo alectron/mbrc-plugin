@@ -134,6 +134,12 @@ impl NowPlayingCache {
         set(&mut self.write().lyrics, lyrics);
     }
 
+    /// Refreshes the track details slice (e.g. after tag mutations or tag change notifications).
+    pub fn refresh_track_details(&self) {
+        let track_details = self.providers.track_details().ok();
+        set(&mut self.write().track_details, track_details);
+    }
+
     /// Refreshes the whole player slice (play-state/volume/mute notifications and
     /// the shuffle/repeat/scrobble poll). `player_state()` returns every player
     /// field in one FFI call, so one refresh serves all of them.

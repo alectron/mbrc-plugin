@@ -288,7 +288,7 @@ pub fn dispatch(ctx: &Ctx, context: &str, data: &Value) -> Option<HandlerResult>
         "nowplayinglyrics" => track::lyrics(ctx),
         "nowplayingrating" => track::rating(data, ctx),
         "nowplayinglfmrating" => track::lfm_rating(data, ctx),
-        "nowplayingtagchange" => track::tag_change(data, p),
+        "nowplayingtagchange" => track::tag_change(data, ctx),
         // A V5-only iOS alias, deliberately outside DISPATCHED_CONTEXTS: it
         // replies on the existing `nowplayingposition` context.
         "nowplayingcurrentposition" if ctx.version.accepts_current_position() => {
