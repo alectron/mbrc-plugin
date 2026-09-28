@@ -310,20 +310,26 @@ namespace MusicBeePlugin.Providers
                 var rawValue = _api.Library_QueryGetLookupTableValue(null);
                 if (!string.IsNullOrEmpty(rawValue))
                 {
-                    var count = values.Count;
                     var seen = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
                     foreach (var item in rawValue.Split(DoubleSeparator, StringSplitOptions.None))
                     {
                         var parts = item.Split(NullSeparator, StringSplitOptions.None);
                         if (parts.Length >= 1)
                         {
-                            var val = parts[0].Cleanup();
-                            if (!string.IsNullOrWhiteSpace(val) && seen.Add(val))
+                            var rawVal = parts[0].Cleanup();
+                            if (!string.IsNullOrWhiteSpace(rawVal))
                             {
-                                values.Add(val);
-                                count++;
-                                if (limit > 0 && count >= limit)
-                                    break;
+                                var split = rawVal.Split(new[] { ';', '\0' }, StringSplitOptions.RemoveEmptyEntries);
+                                foreach (var part in split)
+                                {
+                                    var cleaned = part.Trim();
+                                    if (!string.IsNullOrEmpty(cleaned) && seen.Add(cleaned))
+                                    {
+                                        values.Add(cleaned);
+                                        if (limit > 0 && values.Count >= limit)
+                                            return true;
+                                    }
+                                }
                             }
                         }
                     }
@@ -333,6 +339,41 @@ namespace MusicBeePlugin.Providers
             finally
             {
                 _api.Library_QueryLookupTable(null, null, null);
+            }
+        }
+
+        private void ScanFilesForGenres(List<string> values, int limit)
+        {
+            if (!_api.Library_QueryFiles(null))
+                return;
+
+            var seen = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
+            while (true)
+            {
+                var file = _api.Library_QueryGetNextFile();
+                if (string.IsNullOrEmpty(file))
+                    break;
+
+                var val = _api.Library_GetFileTag(file, Plugin.MetaDataType.Genres);
+                if (string.IsNullOrWhiteSpace(val))
+                {
+                    val = _api.Library_GetFileTag(file, Plugin.MetaDataType.Genre);
+                }
+
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    var split = val.Split(new[] { ';', '\0' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var part in split)
+                    {
+                        var cleaned = part.Trim();
+                        if (!string.IsNullOrEmpty(cleaned) && seen.Add(cleaned))
+                        {
+                            values.Add(cleaned);
+                            if (limit > 0 && values.Count >= limit)
+                                return;
+                        }
+                    }
+                }
             }
         }
 
@@ -383,27 +424,43 @@ namespace MusicBeePlugin.Providers
                     values = new List<string>()
                 };
 
-                // 1. Try querying lookup table using original tag name
-                var success = QueryLookupValues(tag, entry.values, limit);
+                var isGenre = tag.Equals("genre", StringComparison.OrdinalIgnoreCase) ||
+                              tag.Equals("genres", StringComparison.OrdinalIgnoreCase);
 
-                var slot = ResolveTagToMetaDataType(tag);
-
-                // 2. If no values found and tag maps to a known slot (e.g. Custom1), try slot name
-                if (!success && slot.HasValue)
+                if (isGenre)
                 {
-                    var slotName = slot.Value.ToString();
-                    if (!slotName.Equals(tag, StringComparison.OrdinalIgnoreCase))
+                    // Query lookup tables first
+                    QueryLookupValues("genres", entry.values, limit);
+                    QueryLookupValues("genre", entry.values, limit);
+
+                    // Also scan library files to capture all multi-value genres from tracks
+                    ScanFilesForGenres(entry.values, limit);
+                }
+                else
+                {
+                    // 1. Try querying lookup table using original tag name
+                    var success = QueryLookupValues(tag, entry.values, limit);
+
+                    var slot = ResolveTagToMetaDataType(tag);
+
+                    // 2. If no values found and tag maps to a known slot (e.g. Custom1), try slot name
+                    if (!success && slot.HasValue)
                     {
-                        success = QueryLookupValues(slotName, entry.values, limit);
+                        var slotName = slot.Value.ToString();
+                        if (!slotName.Equals(tag, StringComparison.OrdinalIgnoreCase))
+                        {
+                            success = QueryLookupValues(slotName, entry.values, limit);
+                        }
+                    }
+
+                    // 3. Fallback: If lookup table returned nothing and we know the slot, scan library files
+                    if (entry.values.Count == 0 && slot.HasValue)
+                    {
+                        FallbackQueryFilesForTag(slot.Value, entry.values, limit);
                     }
                 }
 
-                // 3. Fallback: If lookup table returned nothing and we know the slot, scan library files
-                if (entry.values.Count == 0 && slot.HasValue)
-                {
-                    FallbackQueryFilesForTag(slot.Value, entry.values, limit);
-                }
-
+                entry.values.Sort(StringComparer.OrdinalIgnoreCase);
                 result.Add(entry);
             }
 
