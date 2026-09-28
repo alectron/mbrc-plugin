@@ -159,6 +159,7 @@ impl Providers for FixtureProviders {
             play_count: "1".into(),
             skip_count: "0".into(),
             duration: "240000".into(),
+            ..Default::default()
         })
     }
     fn cover(&self) -> Result<Cover, String> {

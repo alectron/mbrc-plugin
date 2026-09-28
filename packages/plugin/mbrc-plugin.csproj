@@ -114,7 +114,7 @@
        is folded into this project (no ILRepack); Costura embeds the managed NuGet
        deps into mb_remote.dll. -->
   <Target AfterTargets="Build" Condition="'$(Configuration)'=='Debug'" Name="PostBuild">
-    <Exec Command="XCOPY /Q /E /I /Y /C /R &quot;$(TargetDir)mb_remote.dll&quot; &quot;$(RepoRoot)app\MusicBee\Plugins&quot;" />
+    <Exec Command="XCOPY /Q /E /I /Y /C /R &quot;$(TargetDir)mb_remote.dll&quot; &quot;$(RepoRoot)app\MusicBee\Plugins\&quot;" />
   </Target>
 
   <!-- Include additional files -->

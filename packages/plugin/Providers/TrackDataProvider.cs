@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using MusicBeePlugin.Providers;
@@ -103,6 +103,22 @@ namespace MusicBeePlugin.Providers
                 composer = string.Empty,
                 comment = string.Empty,
                 encoder = string.Empty,
+                custom1 = string.Empty, custom1Name = string.Empty,
+                custom2 = string.Empty, custom2Name = string.Empty,
+                custom3 = string.Empty, custom3Name = string.Empty,
+                custom4 = string.Empty, custom4Name = string.Empty,
+                custom5 = string.Empty, custom5Name = string.Empty,
+                custom6 = string.Empty, custom6Name = string.Empty,
+                custom7 = string.Empty, custom7Name = string.Empty,
+                custom8 = string.Empty, custom8Name = string.Empty,
+                custom9 = string.Empty, custom9Name = string.Empty,
+                custom10 = string.Empty, custom10Name = string.Empty,
+                custom11 = string.Empty, custom11Name = string.Empty,
+                custom12 = string.Empty, custom12Name = string.Empty,
+                custom13 = string.Empty, custom13Name = string.Empty,
+                custom14 = string.Empty, custom14Name = string.Empty,
+                custom15 = string.Empty, custom15Name = string.Empty,
+                custom16 = string.Empty, custom16Name = string.Empty,
             };
 
             if (metadataSuccess && metadataResults != null && metadataResults.Length >= metadataFields.Length)
@@ -119,6 +135,16 @@ namespace MusicBeePlugin.Providers
                 details.composer = metadataResults[9].Cleanup();
                 details.comment = metadataResults[10].Cleanup();
                 details.encoder = metadataResults[11].Cleanup();
+            }
+
+            // Populate custom metadata tags (Custom1..Custom16) and their configured field names
+            try
+            {
+                PopulateCustomTags(details);
+            }
+            catch
+            {
+                // Non-critical: failure to read custom tags should not fail TrackDetails
             }
 
             // Get file properties (these use different API methods)
@@ -469,31 +495,128 @@ namespace MusicBeePlugin.Providers
                 : string.Empty;
         }
 
-        private static Plugin.MetaDataType? GetMetaDataTypeFromTagName(string tagName)
+        private static readonly Plugin.MetaDataType[] CustomTagSlots = new[]
         {
-            switch (tagName)
+            Plugin.MetaDataType.Custom1, Plugin.MetaDataType.Custom2,
+            Plugin.MetaDataType.Custom3, Plugin.MetaDataType.Custom4,
+            Plugin.MetaDataType.Custom5, Plugin.MetaDataType.Custom6,
+            Plugin.MetaDataType.Custom7, Plugin.MetaDataType.Custom8,
+            Plugin.MetaDataType.Custom9, Plugin.MetaDataType.Custom10,
+            Plugin.MetaDataType.Custom11, Plugin.MetaDataType.Custom12,
+            Plugin.MetaDataType.Custom13, Plugin.MetaDataType.Custom14,
+            Plugin.MetaDataType.Custom15, Plugin.MetaDataType.Custom16
+        };
+
+        private void PopulateCustomTags(TrackDetails details)
+        {
+            if (_api.NowPlaying_GetFileTag == null)
+                return;
+
+            string[] results = null;
+            var success = _api.NowPlaying_GetFileTags != null &&
+                          _api.NowPlaying_GetFileTags(CustomTagSlots, out results) &&
+                          results != null && results.Length >= CustomTagSlots.Length;
+
+            for (var i = 0; i < CustomTagSlots.Length; i++)
             {
-                case "TrackTitle":
-                    return Plugin.MetaDataType.TrackTitle;
-                case "Artist":
-                    return Plugin.MetaDataType.Artist;
-                case "Album":
-                    return Plugin.MetaDataType.Album;
-                case "AlbumArtist":
-                    return Plugin.MetaDataType.AlbumArtist;
-                case "Genre":
-                    return Plugin.MetaDataType.Genre;
-                case "Year":
-                    return Plugin.MetaDataType.Year;
-                case "Composer":
-                    return Plugin.MetaDataType.Composer;
-                case "Comment":
-                    return Plugin.MetaDataType.Comment;
-                case "Lyrics":
-                    return Plugin.MetaDataType.Lyrics;
-                default:
-                    return null;
+                var slot = CustomTagSlots[i];
+                var val = success ? results[i].Cleanup() : (_api.NowPlaying_GetFileTag(slot) ?? string.Empty).Cleanup();
+                var name = (_api.Setting_GetFieldName != null ? _api.Setting_GetFieldName(slot) : null) ?? string.Empty;
+
+                switch (i)
+                {
+                    case 0: details.custom1 = val; details.custom1Name = name; break;
+                    case 1: details.custom2 = val; details.custom2Name = name; break;
+                    case 2: details.custom3 = val; details.custom3Name = name; break;
+                    case 3: details.custom4 = val; details.custom4Name = name; break;
+                    case 4: details.custom5 = val; details.custom5Name = name; break;
+                    case 5: details.custom6 = val; details.custom6Name = name; break;
+                    case 6: details.custom7 = val; details.custom7Name = name; break;
+                    case 7: details.custom8 = val; details.custom8Name = name; break;
+                    case 8: details.custom9 = val; details.custom9Name = name; break;
+                    case 9: details.custom10 = val; details.custom10Name = name; break;
+                    case 10: details.custom11 = val; details.custom11Name = name; break;
+                    case 11: details.custom12 = val; details.custom12Name = name; break;
+                    case 12: details.custom13 = val; details.custom13Name = name; break;
+                    case 13: details.custom14 = val; details.custom14Name = name; break;
+                    case 14: details.custom15 = val; details.custom15Name = name; break;
+                    case 15: details.custom16 = val; details.custom16Name = name; break;
+                }
             }
+        }
+
+        private Plugin.MetaDataType? GetMetaDataTypeFromTagName(string tagName)
+        {
+            if (string.IsNullOrWhiteSpace(tagName))
+                return null;
+
+            var clean = tagName.Trim();
+
+            // 1. Direct standard names
+            switch (clean.ToLowerInvariant())
+            {
+                case "tracktitle":
+                case "title":
+                    return Plugin.MetaDataType.TrackTitle;
+                case "artist":
+                    return Plugin.MetaDataType.Artist;
+                case "album":
+                    return Plugin.MetaDataType.Album;
+                case "albumartist":
+                    return Plugin.MetaDataType.AlbumArtist;
+                case "genre":
+                    return Plugin.MetaDataType.Genre;
+                case "genres":
+                    return Plugin.MetaDataType.Genres;
+                case "year":
+                    return Plugin.MetaDataType.Year;
+                case "composer":
+                    return Plugin.MetaDataType.Composer;
+                case "comment":
+                    return Plugin.MetaDataType.Comment;
+                case "lyrics":
+                    return Plugin.MetaDataType.Lyrics;
+                case "mood":
+                    return Plugin.MetaDataType.Mood;
+                case "occasion":
+                    return Plugin.MetaDataType.Occasion;
+                case "grouping":
+                    return Plugin.MetaDataType.Grouping;
+                case "publisher":
+                    return Plugin.MetaDataType.Publisher;
+                case "bpm":
+                case "beatspermin":
+                    return Plugin.MetaDataType.BeatsPerMin;
+            }
+
+            // 2. Direct enum name matching (e.g. "Custom1", "Custom2")
+            if (Enum.TryParse<Plugin.MetaDataType>(clean, true, out var parsedEnum))
+            {
+                return parsedEnum;
+            }
+
+            // 3. User-defined custom tag display names (e.g. "Energy", "Instruments")
+            if (_api.Setting_GetFieldName != null)
+            {
+                foreach (var slot in CustomTagSlots)
+                {
+                    try
+                    {
+                        var fieldName = _api.Setting_GetFieldName(slot);
+                        if (!string.IsNullOrEmpty(fieldName) &&
+                            fieldName.Equals(clean, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return slot;
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore any failure during name resolution
+                    }
+                }
+            }
+
+            return null;
         }
 
         #endregion

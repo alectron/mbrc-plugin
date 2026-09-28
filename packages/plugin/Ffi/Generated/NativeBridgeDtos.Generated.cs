@@ -67,6 +67,38 @@ namespace MusicBeePlugin.Ffi
         public string playCount { get; set; }
         public string skipCount { get; set; }
         public string duration { get; set; }
+        public string custom1 { get; set; }
+        public string custom1Name { get; set; }
+        public string custom2 { get; set; }
+        public string custom2Name { get; set; }
+        public string custom3 { get; set; }
+        public string custom3Name { get; set; }
+        public string custom4 { get; set; }
+        public string custom4Name { get; set; }
+        public string custom5 { get; set; }
+        public string custom5Name { get; set; }
+        public string custom6 { get; set; }
+        public string custom6Name { get; set; }
+        public string custom7 { get; set; }
+        public string custom7Name { get; set; }
+        public string custom8 { get; set; }
+        public string custom8Name { get; set; }
+        public string custom9 { get; set; }
+        public string custom9Name { get; set; }
+        public string custom10 { get; set; }
+        public string custom10Name { get; set; }
+        public string custom11 { get; set; }
+        public string custom11Name { get; set; }
+        public string custom12 { get; set; }
+        public string custom12Name { get; set; }
+        public string custom13 { get; set; }
+        public string custom13Name { get; set; }
+        public string custom14 { get; set; }
+        public string custom14Name { get; set; }
+        public string custom15 { get; set; }
+        public string custom15Name { get; set; }
+        public string custom16 { get; set; }
+        public string custom16Name { get; set; }
     }
 
     public class Cover

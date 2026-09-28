@@ -150,6 +150,71 @@ pub struct TrackDetails {
     pub play_count: String,
     pub skip_count: String,
     pub duration: String,
+
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom1: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom1_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom2: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom2_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom3: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom3_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom4: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom4_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom5: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom5_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom6: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom6_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom7: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom7_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom8: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom8_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom9: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom9_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom10: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom10_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom11: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom11_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom12: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom12_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom13: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom13_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom14: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom14_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom15: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom15_name: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom16: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub custom16_name: String,
 }
 
 /// Cover payload (FFI query `CoverData`). `cover` is omitted on the wire when
