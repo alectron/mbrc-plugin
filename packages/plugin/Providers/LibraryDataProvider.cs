@@ -214,6 +214,158 @@ namespace MusicBeePlugin.Providers
             }
         }
 
+        private static readonly Plugin.MetaDataType[] CustomTagSlots = new[]
+        {
+            Plugin.MetaDataType.Custom1, Plugin.MetaDataType.Custom2,
+            Plugin.MetaDataType.Custom3, Plugin.MetaDataType.Custom4,
+            Plugin.MetaDataType.Custom5, Plugin.MetaDataType.Custom6,
+            Plugin.MetaDataType.Custom7, Plugin.MetaDataType.Custom8,
+            Plugin.MetaDataType.Custom9, Plugin.MetaDataType.Custom10,
+            Plugin.MetaDataType.Custom11, Plugin.MetaDataType.Custom12,
+            Plugin.MetaDataType.Custom13, Plugin.MetaDataType.Custom14,
+            Plugin.MetaDataType.Custom15, Plugin.MetaDataType.Custom16
+        };
+
+        private Plugin.MetaDataType? ResolveTagToMetaDataType(string tag)
+        {
+            if (string.IsNullOrWhiteSpace(tag))
+                return null;
+
+            var clean = tag.Trim();
+
+            // Direct standard names
+            switch (clean.ToLowerInvariant())
+            {
+                case "tracktitle":
+                case "title":
+                    return Plugin.MetaDataType.TrackTitle;
+                case "artist":
+                    return Plugin.MetaDataType.Artist;
+                case "album":
+                    return Plugin.MetaDataType.Album;
+                case "albumartist":
+                    return Plugin.MetaDataType.AlbumArtist;
+                case "genre":
+                    return Plugin.MetaDataType.Genre;
+                case "genres":
+                    return Plugin.MetaDataType.Genres;
+                case "year":
+                    return Plugin.MetaDataType.Year;
+                case "composer":
+                    return Plugin.MetaDataType.Composer;
+                case "comment":
+                    return Plugin.MetaDataType.Comment;
+                case "lyrics":
+                    return Plugin.MetaDataType.Lyrics;
+                case "mood":
+                    return Plugin.MetaDataType.Mood;
+                case "occasion":
+                    return Plugin.MetaDataType.Occasion;
+                case "grouping":
+                    return Plugin.MetaDataType.Grouping;
+                case "publisher":
+                    return Plugin.MetaDataType.Publisher;
+                case "bpm":
+                case "beatspermin":
+                    return Plugin.MetaDataType.BeatsPerMin;
+            }
+
+            // Direct enum match (e.g. "Custom1", "Custom2")
+            if (Enum.TryParse<Plugin.MetaDataType>(clean, true, out var parsedEnum))
+                return parsedEnum;
+
+            // User-defined custom tag display names (e.g. "Energy", "Instruments")
+            if (_api.Setting_GetFieldName != null)
+            {
+                foreach (var slot in CustomTagSlots)
+                {
+                    try
+                    {
+                        var fieldName = _api.Setting_GetFieldName(slot);
+                        if (!string.IsNullOrEmpty(fieldName) &&
+                            fieldName.Equals(clean, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return slot;
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private bool QueryLookupValues(string keyTag, List<string> values, int limit)
+        {
+            if (!_api.Library_QueryLookupTable(keyTag, "count", null))
+            {
+                _api.Library_QueryLookupTable(null, null, null);
+                return false;
+            }
+
+            try
+            {
+                var rawValue = _api.Library_QueryGetLookupTableValue(null);
+                if (!string.IsNullOrEmpty(rawValue))
+                {
+                    var count = values.Count;
+                    var seen = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
+                    foreach (var item in rawValue.Split(DoubleSeparator, StringSplitOptions.None))
+                    {
+                        var parts = item.Split(NullSeparator, StringSplitOptions.None);
+                        if (parts.Length >= 1)
+                        {
+                            var val = parts[0].Cleanup();
+                            if (!string.IsNullOrWhiteSpace(val) && seen.Add(val))
+                            {
+                                values.Add(val);
+                                count++;
+                                if (limit > 0 && count >= limit)
+                                    break;
+                            }
+                        }
+                    }
+                }
+                return values.Count > 0;
+            }
+            finally
+            {
+                _api.Library_QueryLookupTable(null, null, null);
+            }
+        }
+
+        private void FallbackQueryFilesForTag(Plugin.MetaDataType slot, List<string> values, int limit)
+        {
+            if (!_api.Library_QueryFiles(null))
+                return;
+
+            var seen = new HashSet<string>(values, StringComparer.OrdinalIgnoreCase);
+            while (true)
+            {
+                var file = _api.Library_QueryGetNextFile();
+                if (string.IsNullOrEmpty(file))
+                    break;
+
+                var val = _api.Library_GetFileTag(file, slot);
+                if (!string.IsNullOrWhiteSpace(val))
+                {
+                    var split = val.Split(new[] { ';', '\0' }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var part in split)
+                    {
+                        var cleaned = part.Trim();
+                        if (!string.IsNullOrEmpty(cleaned) && seen.Add(cleaned))
+                        {
+                            values.Add(cleaned);
+                            if (limit > 0 && values.Count >= limit)
+                                return;
+                        }
+                    }
+                }
+            }
+        }
+
         public List<TagValuesEntry> BrowseTagValues(List<string> tags, int limit = 1000)
         {
             var result = new List<TagValuesEntry>();
@@ -231,35 +383,25 @@ namespace MusicBeePlugin.Providers
                     values = new List<string>()
                 };
 
-                if (_api.Library_QueryLookupTable(tag, "count", null))
+                // 1. Try querying lookup table using original tag name
+                var success = QueryLookupValues(tag, entry.values, limit);
+
+                var slot = ResolveTagToMetaDataType(tag);
+
+                // 2. If no values found and tag maps to a known slot (e.g. Custom1), try slot name
+                if (!success && slot.HasValue)
                 {
-                    try
+                    var slotName = slot.Value.ToString();
+                    if (!slotName.Equals(tag, StringComparison.OrdinalIgnoreCase))
                     {
-                        var rawValue = _api.Library_QueryGetLookupTableValue(null);
-                        if (!string.IsNullOrEmpty(rawValue))
-                        {
-                            var count = 0;
-                            foreach (var item in rawValue.Split(DoubleSeparator, StringSplitOptions.None))
-                            {
-                                var parts = item.Split(NullSeparator, StringSplitOptions.None);
-                                if (parts.Length >= 1)
-                                {
-                                    var val = parts[0].Cleanup();
-                                    if (!string.IsNullOrWhiteSpace(val))
-                                    {
-                                        entry.values.Add(val);
-                                        count++;
-                                        if (limit > 0 && count >= limit)
-                                            break;
-                                    }
-                                }
-                            }
-                        }
+                        success = QueryLookupValues(slotName, entry.values, limit);
                     }
-                    finally
-                    {
-                        _api.Library_QueryLookupTable(null, null, null);
-                    }
+                }
+
+                // 3. Fallback: If lookup table returned nothing and we know the slot, scan library files
+                if (entry.values.Count == 0 && slot.HasValue)
+                {
+                    FallbackQueryFilesForTag(slot.Value, entry.values, limit);
                 }
 
                 result.Add(entry);
