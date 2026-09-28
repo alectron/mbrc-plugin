@@ -202,6 +202,8 @@ pub enum QueryType {
     PlaylistCatalog = 47,
     // Creates a playlist and answers its url; empty when the host refused.
     PlaylistCreate = 48,
+    // Queries unique values of specified tags from MusicBee's lookup table.
+    LibraryBrowseTagValues = 49,
 }
 
 /// Command types for the fat `execute_command` callback (C# mutates state).

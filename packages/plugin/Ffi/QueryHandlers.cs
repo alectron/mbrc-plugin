@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MusicBeePlugin.Providers;
@@ -90,6 +90,7 @@ namespace MusicBeePlugin.Ffi
                 case QueryType.LibraryTracksForPaths: return Pack(_library.GetTracksForPaths(Msgpack.Deserialize<PathsParams>(p).paths));
                 case QueryType.LibraryTrackTags: return Pack(_library.GetTrackTags(Msgpack.Deserialize<PathsParams>(p).paths));
                 case QueryType.LibrarySyncDelta: return Pack(BuildSyncDelta(Msgpack.Deserialize<SyncDeltaParams>(p)));
+                case QueryType.LibraryBrowseTagValues: return Pack(BuildBrowseTagValues(Msgpack.Deserialize<BrowseTagValuesParams>(p)));
                 default: return null;
             }
         }
@@ -255,6 +256,12 @@ namespace MusicBeePlugin.Ffi
         {
             var (added, updated, deleted) = _library.GetSyncDelta(p.updated_since);
             return new SyncDelta { added = added, updated = updated, deleted = deleted };
+        }
+
+        private BrowseTagValuesResult BuildBrowseTagValues(BrowseTagValuesParams p)
+        {
+            var entries = _library.BrowseTagValues(p?.tags ?? new List<string>(), p == null || p.limit <= 0 ? 1000 : p.limit);
+            return new BrowseTagValuesResult { entries = entries };
         }
 
         private static byte[] Pack<T>(T value) => Msgpack.Serialize(value);

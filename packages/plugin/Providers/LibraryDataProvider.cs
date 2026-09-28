@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -212,6 +212,60 @@ namespace MusicBeePlugin.Providers
                     src = currentTrack
                 };
             }
+        }
+
+        public List<TagValuesEntry> BrowseTagValues(List<string> tags, int limit = 1000)
+        {
+            var result = new List<TagValuesEntry>();
+            if (tags == null || tags.Count == 0)
+                return result;
+
+            foreach (var tag in tags)
+            {
+                if (string.IsNullOrWhiteSpace(tag))
+                    continue;
+
+                var entry = new TagValuesEntry
+                {
+                    tag = tag,
+                    values = new List<string>()
+                };
+
+                if (_api.Library_QueryLookupTable(tag, "count", null))
+                {
+                    try
+                    {
+                        var rawValue = _api.Library_QueryGetLookupTableValue(null);
+                        if (!string.IsNullOrEmpty(rawValue))
+                        {
+                            var count = 0;
+                            foreach (var item in rawValue.Split(DoubleSeparator, StringSplitOptions.None))
+                            {
+                                var parts = item.Split(NullSeparator, StringSplitOptions.None);
+                                if (parts.Length >= 1)
+                                {
+                                    var val = parts[0].Cleanup();
+                                    if (!string.IsNullOrWhiteSpace(val))
+                                    {
+                                        entry.values.Add(val);
+                                        count++;
+                                        if (limit > 0 && count >= limit)
+                                            break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        _api.Library_QueryLookupTable(null, null, null);
+                    }
+                }
+
+                result.Add(entry);
+            }
+
+            return result;
         }
 
         #endregion

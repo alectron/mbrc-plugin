@@ -25,6 +25,11 @@ $ErrorActionPreference = "Stop"
 $root = $PSScriptRoot
 $target = "i686-pc-windows-msvc"
 
+$cargoBin = Join-Path $env:USERPROFILE ".cargo\bin"
+if ((Test-Path $cargoBin) -and ($env:PATH -notlike "*$cargoBin*")) {
+    $env:PATH = "$cargoBin;$env:PATH"
+}
+
 # No selector => build everything; a selector limits to that component.
 $buildRust = $Rust -or (-not $Rust -and -not $Plugin)
 $buildPlugin = $Plugin -or (-not $Rust -and -not $Plugin)

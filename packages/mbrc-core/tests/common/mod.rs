@@ -320,6 +320,20 @@ impl Providers for FixtureProviders {
             data: vec![track()],
         })
     }
+    fn browse_tag_values(
+        &self,
+        tags: Vec<String>,
+        _limit: i32,
+    ) -> Result<mbrc_core::ffi::dtos::BrowseTagValuesResult, String> {
+        let entries = tags
+            .into_iter()
+            .map(|t| mbrc_core::ffi::dtos::TagValuesEntry {
+                tag: t,
+                values: vec!["Val1".into(), "Val2".into()],
+            })
+            .collect();
+        Ok(mbrc_core::ffi::dtos::BrowseTagValuesResult { entries })
+    }
     fn genre_artists(&self, _g: &str) -> Result<Vec<ArtistData>, String> {
         Ok(vec![ArtistData {
             artist: "Artist".into(),

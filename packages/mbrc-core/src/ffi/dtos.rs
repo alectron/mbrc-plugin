@@ -344,3 +344,25 @@ pub struct PairedBrowserName {
     pub id: String,
     pub label: String,
 }
+
+/// `LibraryBrowseTagValues` query: tag names to retrieve unique values for.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct BrowseTagValuesParams {
+    pub tags: Vec<String>,
+    #[serde(default)]
+    pub limit: i32,
+}
+
+/// A tag and its unique values from MusicBee.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct TagValuesEntry {
+    pub tag: String,
+    pub values: Vec<String>,
+}
+
+/// Result of `LibraryBrowseTagValues`.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct BrowseTagValuesResult {
+    pub entries: Vec<TagValuesEntry>,
+}
+

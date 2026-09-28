@@ -543,6 +543,27 @@ pub fn play_all(data: &Value, p: &dyn Providers) -> HandlerResult {
     Ok(vec![("libraryplayall".to_string(), json!(true))])
 }
 
+pub fn browse_tag_values(data: &Value, ctx: &Ctx) -> HandlerResult {
+    let mut tags = Vec::new();
+    if let Some(arr) = data.get("tags").and_then(Value::as_array) {
+        for v in arr {
+            if let Some(s) = v.as_str() {
+                tags.push(s.to_string());
+            }
+        }
+    } else if let Some(tag) = data.get("tag").and_then(Value::as_str) {
+        tags.push(tag.to_string());
+    } else if let Some(tag) = as_set_string(data) {
+        if !tag.is_empty() {
+            tags.push(tag);
+        }
+    }
+
+    let limit = data.get("limit").and_then(Value::as_i64).unwrap_or(1000) as i32;
+    let res = ctx.providers.browse_tag_values(tags, limit)?;
+    reply_dto("browsetagvalues", &res)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

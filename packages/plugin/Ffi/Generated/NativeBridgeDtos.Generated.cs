@@ -469,4 +469,21 @@ namespace MusicBeePlugin.Ffi
         public string label { get; set; }
     }
 
+    public class BrowseTagValuesParams
+    {
+        public List<string> tags { get; set; }
+        public int limit { get; set; }
+    }
+
+    public class TagValuesEntry
+    {
+        public string tag { get; set; }
+        public List<string> values { get; set; }
+    }
+
+    public class BrowseTagValuesResult
+    {
+        public List<TagValuesEntry> entries { get; set; }
+    }
+
 }

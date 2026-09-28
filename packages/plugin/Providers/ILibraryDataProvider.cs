@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using MusicBeePlugin.Models;
 using MusicBeePlugin.Ffi;
 
@@ -55,6 +55,13 @@ namespace MusicBeePlugin.Providers
         /// <param name="offset">Number of tracks to skip</param>
         /// <param name="limit">Maximum number of tracks to return</param>
         IEnumerable<Track> BrowseTracks(int offset = 0, int limit = 4000);
+
+        /// <summary>
+        ///     Queries unique values for specified tags from MusicBee's lookup table.
+        /// </summary>
+        /// <param name="tags">Tag names to query</param>
+        /// <param name="limit">Max unique values per tag</param>
+        List<TagValuesEntry> BrowseTagValues(List<string> tags, int limit = 1000);
 
         // Hierarchical Navigation
 

@@ -11,11 +11,11 @@
 
 use crate::ffi::callbacks::SafeCallbacks;
 use crate::ffi::dtos::{
-    AlbumCoverParams, BatchMetadataParams, BrowseParams, IndexParams, MoveParams,
-    NowPlayingQueueParams, PaginationParams, PathParams, PathsParams, PlaylistCreateParams,
-    PlaylistFilesParams, PodcastEpisodeParams, PodcastEpisodesParams, QueryParams, SetBoolParams,
-    SetIntParams, SetLfmRatingParams, SetRepeatParams, StringValueParams, SyncDeltaParams,
-    TagChangeParams,
+    AlbumCoverParams, BatchMetadataParams, BrowseParams, BrowseTagValuesParams,
+    BrowseTagValuesResult, IndexParams, MoveParams, NowPlayingQueueParams, PaginationParams,
+    PathParams, PathsParams, PlaylistCreateParams, PlaylistFilesParams, PodcastEpisodeParams,
+    PodcastEpisodesParams, QueryParams, SetBoolParams, SetIntParams, SetLfmRatingParams,
+    SetRepeatParams, StringValueParams, SyncDeltaParams, TagChangeParams,
 };
 use crate::ffi::types::{CommandType, QueryType};
 use crate::protocol::messages::{
@@ -131,6 +131,12 @@ pub trait Providers: Send + Sync {
     ) -> Result<Page<ArtistData>, String>;
     fn browse_albums(&self, offset: i32, limit: i32) -> Result<Page<AlbumData>, String>;
     fn browse_tracks(&self, offset: i32, limit: i32) -> Result<Page<Track>, String>;
+    /// Queries unique values of specified tags from MusicBee's lookup table.
+    fn browse_tag_values(
+        &self,
+        tags: Vec<String>,
+        limit: i32,
+    ) -> Result<BrowseTagValuesResult, String>;
 
     // Library - hierarchical navigation (iOS; non-paginated).
     fn genre_artists(&self, genre: &str) -> Result<Vec<ArtistData>, String>;
@@ -473,6 +479,16 @@ impl Providers for FfiProviders {
         self.callbacks.query(
             QueryType::LibraryBrowseTracks,
             &PaginationParams { offset, limit },
+        )
+    }
+    fn browse_tag_values(
+        &self,
+        tags: Vec<String>,
+        limit: i32,
+    ) -> Result<BrowseTagValuesResult, String> {
+        self.callbacks.query(
+            QueryType::LibraryBrowseTagValues,
+            &BrowseTagValuesParams { tags, limit },
         )
     }
     fn genre_artists(&self, genre: &str) -> Result<Vec<ArtistData>, String> {
@@ -836,6 +852,13 @@ impl Providers for NullProviders {
     fn browse_tracks(&self, _offset: i32, _limit: i32) -> Result<Page<Track>, String> {
         Ok(Page::default())
     }
+    fn browse_tag_values(
+        &self,
+        _tags: Vec<String>,
+        _limit: i32,
+    ) -> Result<BrowseTagValuesResult, String> {
+        Ok(BrowseTagValuesResult::default())
+    }
     fn genre_artists(&self, _genre: &str) -> Result<Vec<ArtistData>, String> {
         Ok(Vec::new())
     }
@@ -947,6 +970,7 @@ pub struct MockProviders {
     pub browse_artists: Page<ArtistData>,
     pub browse_albums: Page<AlbumData>,
     pub browse_tracks: Page<Track>,
+    pub browse_tag_values: BrowseTagValuesResult,
     pub genre_artists: Vec<ArtistData>,
     pub artist_albums: Vec<AlbumData>,
     pub album_tracks: Vec<Track>,
@@ -1218,6 +1242,14 @@ impl Providers for MockProviders {
     fn browse_tracks(&self, _offset: i32, _limit: i32) -> Result<Page<Track>, String> {
         self.record("browse_tracks");
         Ok(self.browse_tracks.clone())
+    }
+    fn browse_tag_values(
+        &self,
+        tags: Vec<String>,
+        limit: i32,
+    ) -> Result<BrowseTagValuesResult, String> {
+        self.record(format!("browse_tag_values({},{})", tags.join(","), limit));
+        Ok(self.browse_tag_values.clone())
     }
     fn genre_artists(&self, genre: &str) -> Result<Vec<ArtistData>, String> {
         self.record(format!("genre_artists({genre})"));
