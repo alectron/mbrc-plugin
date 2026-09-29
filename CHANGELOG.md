@@ -59,6 +59,15 @@ Change Log
   at. The size is recorded with the cache now, and one built at a different size
   is discarded.
 
+## 1.7.2 - 2026/09/29
+
+### Added
+- Multi-value genre and custom tag scanning across the entire library: scans both `Plugin.MetaDataType.Genres` and `Plugin.MetaDataType.Genre` with semicolon (`;`) and null byte (`\0`) splitting to capture all multi-value tags across large libraries (such as composite and secondary genres).
+- Added `LibraryBrowseTagValues` command (opcode 49 `browsetagvalues`) across the Rust core and C# plugin host, enabling lightweight, fast taxonomy querying for Android custom tag suggestions.
+- Bidirectional custom tag writing (`NowPlayingTagChange`): resolves user-friendly tag names (e.g. `Energy`, `Instruments`, `Genre`) to MusicBee internal slots (`Custom1..16`, `Genre`, etc.) via `Library_SetFileTag`.
+- Instant MusicBee GUI updates via `MB_RefreshPanels()`, eliminating the 30-90 second latency where remote tag modifications lagged behind on the desktop display.
+- Technical documentation: added [v1.7.2 Milestone Report](docs/milestones/v1.7.2-milestone-report.md) detailing architecture, sequence flows, and protocols.
+
 ## 1.5.0 - 2026/08/31
 
 The plugin's core has been rewritten in Rust. It ships as `mbrc_core.dll`
