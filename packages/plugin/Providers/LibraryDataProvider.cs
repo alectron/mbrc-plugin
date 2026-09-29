@@ -354,11 +354,11 @@ namespace MusicBeePlugin.Providers
                 if (string.IsNullOrEmpty(file))
                     break;
 
-                var val = _api.Library_GetFileTag(file, Plugin.MetaDataType.Genres);
-                if (string.IsNullOrWhiteSpace(val))
-                {
-                    val = _api.Library_GetFileTag(file, Plugin.MetaDataType.Genre);
-                }
+                var genresVal = _api.Library_GetFileTag(file, Plugin.MetaDataType.Genres);
+                var genreVal = _api.Library_GetFileTag(file, Plugin.MetaDataType.Genre);
+                var val = string.IsNullOrEmpty(genresVal) ? genreVal :
+                          string.IsNullOrEmpty(genreVal) ? genresVal :
+                          genresVal + ";" + genreVal;
 
                 if (!string.IsNullOrWhiteSpace(val))
                 {
