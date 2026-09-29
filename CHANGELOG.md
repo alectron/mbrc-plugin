@@ -59,7 +59,7 @@ Change Log
   at. The size is recorded with the cache now, and one built at a different size
   is discarded.
 
-## 1.7.2 - 2026/09/29
+## 1.5.2 - 2026/09/29
 
 ### Added
 - Multi-value genre and custom tag scanning across the entire library: scans both `Plugin.MetaDataType.Genres` and `Plugin.MetaDataType.Genre` with semicolon (`;`) and null byte (`\0`) splitting to capture all multi-value tags across large libraries (such as composite and secondary genres).
