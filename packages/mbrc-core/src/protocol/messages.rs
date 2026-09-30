@@ -138,6 +138,8 @@ pub struct TrackDetails {
     pub grouping: String,
     pub rating_album: String,
     pub encoder: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
+    pub mood: String,
     pub kind: String,
     pub format: String,
     pub size: String,

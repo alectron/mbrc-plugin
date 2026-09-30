@@ -81,7 +81,8 @@ namespace MusicBeePlugin.Providers
                 Plugin.MetaDataType.RatingAlbum,
                 Plugin.MetaDataType.Composer,
                 Plugin.MetaDataType.Comment,
-                Plugin.MetaDataType.Encoder
+                Plugin.MetaDataType.Encoder,
+                Plugin.MetaDataType.Mood
             };
 
             var metadataResults = new string[metadataFields.Length];
@@ -103,6 +104,7 @@ namespace MusicBeePlugin.Providers
                 composer = string.Empty,
                 comment = string.Empty,
                 encoder = string.Empty,
+                mood = string.Empty,
                 custom1 = string.Empty, custom1Name = string.Empty,
                 custom2 = string.Empty, custom2Name = string.Empty,
                 custom3 = string.Empty, custom3Name = string.Empty,
@@ -135,6 +137,7 @@ namespace MusicBeePlugin.Providers
                 details.composer = metadataResults[9].Cleanup();
                 details.comment = metadataResults[10].Cleanup();
                 details.encoder = metadataResults[11].Cleanup();
+                details.mood = metadataResults[12].Cleanup();
             }
 
             // Populate custom metadata tags (Custom1..Custom16) and their configured field names
@@ -586,12 +589,16 @@ namespace MusicBeePlugin.Providers
                 case "lyrics":
                     return Plugin.MetaDataType.Lyrics;
                 case "mood":
+                case "moods":
                     return Plugin.MetaDataType.Mood;
                 case "occasion":
+                case "occasions":
                     return Plugin.MetaDataType.Occasion;
                 case "grouping":
+                case "groupings":
                     return Plugin.MetaDataType.Grouping;
                 case "publisher":
+                case "publishers":
                     return Plugin.MetaDataType.Publisher;
                 case "bpm":
                 case "beatspermin":
@@ -613,7 +620,8 @@ namespace MusicBeePlugin.Providers
                     {
                         var fieldName = _api.Setting_GetFieldName(slot);
                         if (!string.IsNullOrEmpty(fieldName) &&
-                            fieldName.Equals(clean, StringComparison.OrdinalIgnoreCase))
+                            (fieldName.Equals(clean, StringComparison.OrdinalIgnoreCase) ||
+                             fieldName.TrimEnd('s').Equals(clean.TrimEnd('s'), StringComparison.OrdinalIgnoreCase)))
                         {
                             return slot;
                         }

@@ -55,6 +55,7 @@ namespace MusicBeePlugin.Ffi
         public string grouping { get; set; }
         public string ratingAlbum { get; set; }
         public string encoder { get; set; }
+        public string mood { get; set; }
         public string kind { get; set; }
         public string format { get; set; }
         public string size { get; set; }

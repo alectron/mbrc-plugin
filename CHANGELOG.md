@@ -59,6 +59,17 @@ Change Log
   at. The size is recorded with the cache now, and one built at a different size
   is discarded.
 
+## 1.5.3 - 2026/09/30
+
+### Added
+- First-class `mood` metadata support in Rust core `TrackDetails` and C# plugin host (`Plugin.MetaDataType.Mood` retrieval and commit).
+- Plural and singular tag alias normalization in `TrackDataProvider.cs` (`mood`/`moods`, `occasion`/`occasions`, `grouping`/`groupings`, `publisher`/`publishers`).
+- Technical documentation: added [v1.7.3 Milestone Report](docs/milestones/v1.7.3-milestone-report.md) detailing architecture, changes, and known issues.
+
+### Fixed
+- Fixed custom tag slot collision where adding an unmapped field (such as "Moods") could overwrite `custom1` by isolating unmapped fields and normalizing aliases.
+- Fixed disappearing `Mood` and `Instruments` chips after file writing due to missing DTO property and singular/plural discrepancy.
+
 ## 1.5.2 - 2026/09/29
 
 ### Added
