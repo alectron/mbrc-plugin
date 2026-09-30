@@ -63,6 +63,11 @@ namespace MusicBeePlugin.Providers
         /// <param name="limit">Max unique values per tag</param>
         List<TagValuesEntry> BrowseTagValues(List<string> tags, int limit = 1000);
 
+        /// <summary>
+        ///     Queries all available tag fields (active custom slots and standard tags) in MusicBee.
+        /// </summary>
+        List<AvailableTagFieldEntry> GetAvailableTagFields();
+
         // Hierarchical Navigation
 
         /// <summary>

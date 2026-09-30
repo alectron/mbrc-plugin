@@ -5,7 +5,7 @@
   <!-- ============================================== -->
   <!-- Bump this version before creating a release tag -->
   <PropertyGroup>
-    <VersionPrefix>1.5.3</VersionPrefix>
+    <VersionPrefix>1.5.4</VersionPrefix>
     <!-- VersionSuffix is set by CI for nightlies (e.g., -nightly.123) -->
     <!-- For releases, CI sets the full Version from the tag -->
 

@@ -100,6 +100,7 @@ namespace MusicBeePlugin.Ffi
         public string custom15Name { get; set; }
         public string custom16 { get; set; }
         public string custom16Name { get; set; }
+        public Dictionary<string, string> tags { get; set; }
     }
 
     public class Cover
@@ -485,6 +486,18 @@ namespace MusicBeePlugin.Ffi
     public class BrowseTagValuesResult
     {
         public List<TagValuesEntry> entries { get; set; }
+    }
+
+    public class AvailableTagFieldEntry
+    {
+        public string name { get; set; }
+        public string slot { get; set; }
+        public bool is_custom { get; set; }
+    }
+
+    public class AvailableTagFieldsResult
+    {
+        public List<AvailableTagFieldEntry> fields { get; set; }
     }
 
 }

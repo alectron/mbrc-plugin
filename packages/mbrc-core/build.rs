@@ -297,6 +297,25 @@ fn map_type(ty: &Type, enums: &HashSet<String>) -> String {
         "bool" => "bool".to_string(),
         "Vec" => format!("List<{}>", first_type_arg(seg, enums)),
         "Option" => first_type_arg(seg, enums),
+        "HashMap" => {
+            if let PathArguments::AngleBracketed(ab) = &seg.arguments {
+                let args: Vec<_> = ab
+                    .args
+                    .iter()
+                    .filter_map(|a| match a {
+                        GenericArgument::Type(t) => Some(map_type(t, enums)),
+                        _ => None,
+                    })
+                    .collect();
+                if args.len() >= 2 {
+                    format!("Dictionary<{}, {}>", args[0], args[1])
+                } else {
+                    "Dictionary<string, string>".to_string()
+                }
+            } else {
+                "Dictionary<string, string>".to_string()
+            }
+        }
         other if enums.contains(other) => "string".to_string(),
         // A generic param (e.g. `T`) or another struct type: use the name as-is.
         other => other.to_string(),

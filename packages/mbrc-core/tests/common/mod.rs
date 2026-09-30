@@ -334,6 +334,9 @@ impl Providers for FixtureProviders {
             .collect();
         Ok(mbrc_core::ffi::dtos::BrowseTagValuesResult { entries })
     }
+    fn available_tag_fields(&self) -> Result<mbrc_core::ffi::dtos::AvailableTagFieldsResult, String> {
+        Ok(mbrc_core::ffi::dtos::AvailableTagFieldsResult::default())
+    }
     fn genre_artists(&self, _g: &str) -> Result<Vec<ArtistData>, String> {
         Ok(vec![ArtistData {
             artist: "Artist".into(),

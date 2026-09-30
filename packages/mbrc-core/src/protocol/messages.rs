@@ -6,6 +6,7 @@
 //! formatter (which applies the V4 quirks). Slices 2/3 grow this with the full
 //! response surface.
 
+use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 
 /// Reply for `PlaybackPosition` (and the V5 `nowplayingcurrentposition`
@@ -217,6 +218,8 @@ pub struct TrackDetails {
     pub custom16: String,
     #[serde(default, skip_serializing_if = "String::is_empty")]
     pub custom16_name: String,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub tags: HashMap<String, String>,
 }
 
 /// Cover payload (FFI query `CoverData`). `cover` is omitted on the wire when

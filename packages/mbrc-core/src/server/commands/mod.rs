@@ -253,6 +253,7 @@ pub const DISPATCHED_CONTEXTS: &[&str] = &[
     "radiostations",
     "libraryplayall",
     "browsetagvalues",
+    "availabletagfields",
     // playlists
     "playlistlist",
     "playlistplay",
@@ -313,6 +314,7 @@ pub fn dispatch(ctx: &Ctx, context: &str, data: &Value) -> Option<HandlerResult>
         "radiostations" => library::radio_stations(data, p),
         "libraryplayall" => library::play_all(data, p),
         "browsetagvalues" => library::browse_tag_values(data, ctx),
+        "availabletagfields" => library::available_tag_fields(ctx),
         "playlistlist" => playlists::list(data, p),
         "playlistplay" => playlists::play(data, p),
         "pluginversion" => system::plugin_version(p),

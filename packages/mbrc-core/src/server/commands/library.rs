@@ -564,6 +564,11 @@ pub fn browse_tag_values(data: &Value, ctx: &Ctx) -> HandlerResult {
     reply_dto("browsetagvalues", &res)
 }
 
+pub fn available_tag_fields(ctx: &Ctx) -> HandlerResult {
+    let res = ctx.providers.available_tag_fields()?;
+    reply_dto("availabletagfields", &res)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

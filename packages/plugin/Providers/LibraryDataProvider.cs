@@ -467,6 +467,58 @@ namespace MusicBeePlugin.Providers
             return result;
         }
 
+        public List<AvailableTagFieldEntry> GetAvailableTagFields()
+        {
+            var result = new List<AvailableTagFieldEntry>();
+
+            // 1. Enumerate active Custom1..Custom16 slots that have a defined name
+            if (_api.Setting_GetFieldName != null)
+            {
+                for (var i = 0; i < CustomTagSlots.Length; i++)
+                {
+                    var slot = CustomTagSlots[i];
+                    try
+                    {
+                        var fieldName = _api.Setting_GetFieldName(slot);
+                        if (!string.IsNullOrWhiteSpace(fieldName))
+                        {
+                            result.Add(new AvailableTagFieldEntry
+                            {
+                                name = fieldName.Trim(),
+                                slot = slot.ToString(),
+                                is_custom = true
+                            });
+                        }
+                    }
+                    catch
+                    {
+                        // Ignore any API query failure
+                    }
+                }
+            }
+
+            // 2. Curated standard MusicBee MetaDataType tags
+            var standardTags = new[]
+            {
+                "Genre", "Mood", "Occasion", "BeatsPerMin", "Tempo",
+                "Grouping", "Publisher", "Composer", "Comment", "Conductor",
+                "Keywords", "Origin", "Language", "OriginalYear", "Year", "Quality",
+                "Artist", "Album", "AlbumArtist", "Title"
+            };
+
+            foreach (var tag in standardTags)
+            {
+                result.Add(new AvailableTagFieldEntry
+                {
+                    name = tag,
+                    slot = tag,
+                    is_custom = false
+                });
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region Hierarchical Navigation

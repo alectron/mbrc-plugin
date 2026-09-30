@@ -94,6 +94,7 @@ namespace MusicBeePlugin.Ffi.Generated
         PlaylistCatalog = 47,
         PlaylistCreate = 48,
         LibraryBrowseTagValues = 49,
+        LibraryAvailableTagFields = 50,
     }
 
     public enum CommandType

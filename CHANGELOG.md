@@ -59,6 +59,15 @@ Change Log
   at. The size is recorded with the cache now, and one built at a different size
   is discarded.
 
+## 1.5.4 - 2026/09/30
+
+### Added
+- Generic metadata dictionary in wire protocol: Rust core `TrackDetails` now includes `pub tags: HashMap<String, String>` mapped across C# FFI as `Dictionary<string, string>`.
+- Dynamic `MetaDataType` resolution in `TrackDataProvider.cs` and `QueryHandlers.cs` via `GetMetaDataTypeFromTagName`, supporting arbitrary custom tags by slot ID (`Custom1`..`Custom16`) and user-assigned display names.
+- Dynamic standard tag resolution for `Artist`, `Album`, `AlbumArtist`, `Title`, `TrackTitle`, and `Year`.
+- FFI opcode 50 (`LibraryAvailableTagFields`) and command `availabletagfields` querying all active standard metadata tag fields and custom slots in the library.
+- Technical documentation: added [v1.7.4 Milestone Report](docs/milestones/v1.7.4-milestone-report.md) detailing architecture, changes, and deployment status.
+
 ## 1.5.3 - 2026/09/30
 
 ### Added

@@ -82,7 +82,10 @@ namespace MusicBeePlugin.Providers
                 Plugin.MetaDataType.Composer,
                 Plugin.MetaDataType.Comment,
                 Plugin.MetaDataType.Encoder,
-                Plugin.MetaDataType.Mood
+                Plugin.MetaDataType.Mood,
+                Plugin.MetaDataType.Occasion,
+                Plugin.MetaDataType.BeatsPerMin,
+                Plugin.MetaDataType.Tempo
             };
 
             var metadataResults = new string[metadataFields.Length];
@@ -121,6 +124,7 @@ namespace MusicBeePlugin.Providers
                 custom14 = string.Empty, custom14Name = string.Empty,
                 custom15 = string.Empty, custom15Name = string.Empty,
                 custom16 = string.Empty, custom16Name = string.Empty,
+                tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
             };
 
             if (metadataSuccess && metadataResults != null && metadataResults.Length >= metadataFields.Length)
@@ -138,7 +142,39 @@ namespace MusicBeePlugin.Providers
                 details.comment = metadataResults[10].Cleanup();
                 details.encoder = metadataResults[11].Cleanup();
                 details.mood = metadataResults[12].Cleanup();
+                var occasion = metadataResults[13].Cleanup();
+                var bpm = metadataResults[14].Cleanup();
+                var tempo = metadataResults[15].Cleanup();
+
+                if (!string.IsNullOrEmpty(details.albumArtist)) details.tags["AlbumArtist"] = details.albumArtist;
+                if (!string.IsNullOrEmpty(details.genre)) details.tags["Genre"] = details.genre;
+                if (!string.IsNullOrEmpty(details.grouping)) details.tags["Grouping"] = details.grouping;
+                if (!string.IsNullOrEmpty(details.publisher)) details.tags["Publisher"] = details.publisher;
+                if (!string.IsNullOrEmpty(details.composer)) details.tags["Composer"] = details.composer;
+                if (!string.IsNullOrEmpty(details.comment)) details.tags["Comment"] = details.comment;
+                if (!string.IsNullOrEmpty(details.mood)) details.tags["Mood"] = details.mood;
+                if (!string.IsNullOrEmpty(occasion)) details.tags["Occasion"] = occasion;
+                if (!string.IsNullOrEmpty(bpm))
+                {
+                    details.tags["BeatsPerMin"] = bpm;
+                    details.tags["BPM"] = bpm;
+                }
+                if (!string.IsNullOrEmpty(tempo)) details.tags["Tempo"] = tempo;
             }
+
+            var artist = _api.NowPlaying_GetFileTag(Plugin.MetaDataType.Artist).Cleanup();
+            var title = _api.NowPlaying_GetFileTag(Plugin.MetaDataType.TrackTitle).Cleanup();
+            var album = _api.NowPlaying_GetFileTag(Plugin.MetaDataType.Album).Cleanup();
+            var year = _api.NowPlaying_GetFileTag(Plugin.MetaDataType.Year).Cleanup();
+
+            if (!string.IsNullOrEmpty(artist)) details.tags["Artist"] = artist;
+            if (!string.IsNullOrEmpty(title))
+            {
+                details.tags["Title"] = title;
+                details.tags["TrackTitle"] = title;
+            }
+            if (!string.IsNullOrEmpty(album)) details.tags["Album"] = album;
+            if (!string.IsNullOrEmpty(year)) details.tags["Year"] = year;
 
             // Populate custom metadata tags (Custom1..Custom16) and their configured field names
             try
@@ -535,6 +571,15 @@ namespace MusicBeePlugin.Providers
                 var val = success ? results[i].Cleanup() : (_api.NowPlaying_GetFileTag(slot) ?? string.Empty).Cleanup();
                 var name = (_api.Setting_GetFieldName != null ? _api.Setting_GetFieldName(slot) : null) ?? string.Empty;
 
+                if (!string.IsNullOrEmpty(val))
+                {
+                    details.tags[slot.ToString()] = val;
+                    if (!string.IsNullOrEmpty(name))
+                    {
+                        details.tags[name] = val;
+                    }
+                }
+
                 switch (i)
                 {
                     case 0: details.custom1 = val; details.custom1Name = name; break;
@@ -603,6 +648,9 @@ namespace MusicBeePlugin.Providers
                 case "bpm":
                 case "beatspermin":
                     return Plugin.MetaDataType.BeatsPerMin;
+                case "tempo":
+                case "tempos":
+                    return Plugin.MetaDataType.Tempo;
             }
 
             // 2. Direct enum name matching (e.g. "Custom1", "Custom2")

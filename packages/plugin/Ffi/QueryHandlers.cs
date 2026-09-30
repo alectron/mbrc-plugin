@@ -91,6 +91,7 @@ namespace MusicBeePlugin.Ffi
                 case QueryType.LibraryTrackTags: return Pack(_library.GetTrackTags(Msgpack.Deserialize<PathsParams>(p).paths));
                 case QueryType.LibrarySyncDelta: return Pack(BuildSyncDelta(Msgpack.Deserialize<SyncDeltaParams>(p)));
                 case QueryType.LibraryBrowseTagValues: return Pack(BuildBrowseTagValues(Msgpack.Deserialize<BrowseTagValuesParams>(p)));
+                case QueryType.LibraryAvailableTagFields: return Pack(BuildAvailableTagFields());
                 default: return null;
             }
         }
@@ -262,6 +263,12 @@ namespace MusicBeePlugin.Ffi
         {
             var entries = _library.BrowseTagValues(p?.tags ?? new List<string>(), p == null || p.limit <= 0 ? 1000 : p.limit);
             return new BrowseTagValuesResult { entries = entries };
+        }
+
+        private AvailableTagFieldsResult BuildAvailableTagFields()
+        {
+            var fields = _library.GetAvailableTagFields();
+            return new AvailableTagFieldsResult { fields = fields };
         }
 
         private static byte[] Pack<T>(T value) => Msgpack.Serialize(value);

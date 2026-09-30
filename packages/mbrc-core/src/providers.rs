@@ -11,7 +11,7 @@
 
 use crate::ffi::callbacks::SafeCallbacks;
 use crate::ffi::dtos::{
-    AlbumCoverParams, BatchMetadataParams, BrowseParams, BrowseTagValuesParams,
+    AlbumCoverParams, AvailableTagFieldsResult, BatchMetadataParams, BrowseParams, BrowseTagValuesParams,
     BrowseTagValuesResult, IndexParams, MoveParams, NowPlayingQueueParams, PaginationParams,
     PathParams, PathsParams, PlaylistCreateParams, PlaylistFilesParams, PodcastEpisodeParams,
     PodcastEpisodesParams, QueryParams, SetBoolParams, SetIntParams, SetLfmRatingParams,
@@ -137,6 +137,8 @@ pub trait Providers: Send + Sync {
         tags: Vec<String>,
         limit: i32,
     ) -> Result<BrowseTagValuesResult, String>;
+    /// Queries all available tag fields (standard and active custom slots) in MusicBee.
+    fn available_tag_fields(&self) -> Result<AvailableTagFieldsResult, String>;
 
     // Library - hierarchical navigation (iOS; non-paginated).
     fn genre_artists(&self, genre: &str) -> Result<Vec<ArtistData>, String>;
@@ -489,6 +491,12 @@ impl Providers for FfiProviders {
         self.callbacks.query(
             QueryType::LibraryBrowseTagValues,
             &BrowseTagValuesParams { tags, limit },
+        )
+    }
+    fn available_tag_fields(&self) -> Result<AvailableTagFieldsResult, String> {
+        self.callbacks.query(
+            QueryType::LibraryAvailableTagFields,
+            &(),
         )
     }
     fn genre_artists(&self, genre: &str) -> Result<Vec<ArtistData>, String> {
@@ -859,6 +867,9 @@ impl Providers for NullProviders {
     ) -> Result<BrowseTagValuesResult, String> {
         Ok(BrowseTagValuesResult::default())
     }
+    fn available_tag_fields(&self) -> Result<AvailableTagFieldsResult, String> {
+        Ok(AvailableTagFieldsResult::default())
+    }
     fn genre_artists(&self, _genre: &str) -> Result<Vec<ArtistData>, String> {
         Ok(Vec::new())
     }
@@ -971,6 +982,7 @@ pub struct MockProviders {
     pub browse_albums: Page<AlbumData>,
     pub browse_tracks: Page<Track>,
     pub browse_tag_values: BrowseTagValuesResult,
+    pub available_tag_fields: AvailableTagFieldsResult,
     pub genre_artists: Vec<ArtistData>,
     pub artist_albums: Vec<AlbumData>,
     pub album_tracks: Vec<Track>,
@@ -1250,6 +1262,10 @@ impl Providers for MockProviders {
     ) -> Result<BrowseTagValuesResult, String> {
         self.record(format!("browse_tag_values({},{})", tags.join(","), limit));
         Ok(self.browse_tag_values.clone())
+    }
+    fn available_tag_fields(&self) -> Result<AvailableTagFieldsResult, String> {
+        self.record("available_tag_fields".to_string());
+        Ok(self.available_tag_fields.clone())
     }
     fn genre_artists(&self, genre: &str) -> Result<Vec<ArtistData>, String> {
         self.record(format!("genre_artists({genre})"));

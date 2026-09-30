@@ -366,3 +366,17 @@ pub struct BrowseTagValuesResult {
     pub entries: Vec<TagValuesEntry>,
 }
 
+/// An available tag field in MusicBee.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AvailableTagFieldEntry {
+    pub name: String,
+    pub slot: String,
+    pub is_custom: bool,
+}
+
+/// Result of `LibraryAvailableTagFields`.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct AvailableTagFieldsResult {
+    pub fields: Vec<AvailableTagFieldEntry>,
+}
+

@@ -204,6 +204,8 @@ pub enum QueryType {
     PlaylistCreate = 48,
     // Queries unique values of specified tags from MusicBee's lookup table.
     LibraryBrowseTagValues = 49,
+    // Queries all available tag fields (standard and active custom slots) in MusicBee.
+    LibraryAvailableTagFields = 50,
 }
 
 /// Command types for the fat `execute_command` callback (C# mutates state).
